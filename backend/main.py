@@ -3,14 +3,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from models.schemas import (
-    TriageRequest, DrugRequest,
-    FacilityRequest, CaseLogRequest, ImageAnalysisRequest
+    TriageRequest,
+    DrugRequest,
+    FacilityRequest,
+    CaseLogRequest,
+    ImageAnalysisRequest,
+    TranslateRequest,
 )
 from agents.orchestrator import run_triage
 from agents.drug_check import check_drug
 from agents.facility import find_nearest_facility
 from agents.outbreak import log_case
 from agents.image_analyze import analyze_image
+from agents.translate import translate_text
 from db.database import init_db
 
 
@@ -31,6 +36,7 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan
 )
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -69,6 +75,22 @@ def triage(req: TriageRequest):
             weight_kg=req.weight_kg,
             language=req.language,
             image_base64=req.image_base64
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/translate")
+def translate(req: TranslateRequest):
+    """
+    Medical translation endpoint.
+    Uses Gemma 4 for multilingual translation with clinical term preservation.
+    """
+    try:
+        return translate_text(
+            text=req.text,
+            source_language=req.source_language,
+            target_language=req.target_language
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

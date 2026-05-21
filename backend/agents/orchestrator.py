@@ -6,13 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from safety.red_zone import check_red_zone
 from rag.retriever import retrieve_context
 
-# ── MOCK MODE ─────────────────────────────────────────────────────────
-# Ollama is temporarily disabled.
-# Returns realistic mock responses so frontend/UI can be built fully.
-# To enable Gemma 4: set MOCK_MODE = False
-MOCK_MODE = True
-# ──────────────────────────────────────────────────────────────────────
-
+MOCK_MODE = False
 
 SYSTEM_PROMPT = """You are ThunaiMed, an offline clinical triage assistant for
 community health workers. You follow WHO IMCI protocols strictly.
@@ -44,7 +38,6 @@ Zone definitions (WHO IMCI):
 - RED: Severe illness, refer urgently (but ONLY if not caught by hardcoded rules)
 """
 
-
 def _format_rag_context(rag_context: list) -> str:
     if not rag_context:
         return "No additional WHO IMCI context retrieved."
@@ -54,16 +47,9 @@ def _format_rag_context(rag_context: list) -> str:
         parts.append(f"[WHO Context {i}] {item['content']}")
     return "\n".join(parts)
 
-
 def _mock_response(symptoms: str, age_months: int, weight_kg: float, rag_context: list = None) -> dict:
-    """
-    Realistic mock triage response.
-    Simulates what Gemma 4 would return.
-    Used while Ollama is being set up.
-    """
     symptoms_lower = symptoms.lower()
 
-    # Determine zone from keywords
     if any(w in symptoms_lower for w in ["fever", "rash", "cough", "cold", "runny"]):
         zone = "YELLOW"
         summary = "Child shows signs of moderate febrile illness requiring monitoring."
@@ -181,12 +167,10 @@ def _mock_response(symptoms: str, age_months: int, weight_kg: float, rag_context
         "ai_bypassed": False
     }
 
-
 def run_triage(symptoms: str, age_months: int = None,
                weight_kg: float = None, language: str = "auto",
                image_base64: str = None) -> dict:
 
-    # LAYER 1: Hardcoded red zone — always runs, even in mock mode
     red = check_red_zone(symptoms)
     if red["is_red_zone"]:
         return {
@@ -207,10 +191,8 @@ def run_triage(symptoms: str, age_months: int = None,
             "ai_bypassed": True
         }
 
-    # LAYER 2: Retrieve WHO IMCI context from local RAG
     rag_context = retrieve_context(symptoms, top_k=3)
 
-    # LAYER 3: Mock or Ollama
     if MOCK_MODE:
         return _mock_response(
             symptoms=symptoms,
@@ -219,7 +201,6 @@ def run_triage(symptoms: str, age_months: int = None,
             rag_context=rag_context
         )
 
-    # LAYER 4: Real Gemma 4 via Ollama
     try:
         import ollama
 
@@ -247,7 +228,7 @@ def run_triage(symptoms: str, age_months: int = None,
             messages[1]["images"] = [image_base64]
 
         response = ollama.chat(
-            model="gemma4:e4b",
+            model="gemma4:e2b",
             messages=messages,
             format="json",
             options={"temperature": 0.1}
@@ -259,7 +240,7 @@ def run_triage(symptoms: str, age_months: int = None,
         if result.get("zone") not in ["GREEN", "YELLOW", "RED"]:
             result["zone"] = "YELLOW"
 
-        result["source"] = "WHO IMCI 2020 + Gemma 4 E4B (Ollama)"
+        result["source"] = "WHO IMCI 2020 + Gemma 4 E2B (Ollama)"
         result["disclaimer"] = (
             "ThunaiMed is a clinical support tool — NOT a diagnostic tool. "
             "Always apply your ASHA training and refer if you are unsure."
@@ -271,7 +252,6 @@ def run_triage(symptoms: str, age_months: int = None,
         return _safe_fallback("Gemma 4 returned non-JSON response")
     except Exception as e:
         return _safe_fallback(str(e))
-
 
 def _safe_fallback(reason: str) -> dict:
     return {

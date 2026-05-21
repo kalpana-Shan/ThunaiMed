@@ -10,6 +10,7 @@ import TranslatorPanel from './components/TranslatorPanel'
 import VisionPanel from './components/VisionPanel'
 import ExportPanel from './components/ExportPanel'
 import ClinicalOverview from './components/ClinicalOverview'
+import OfflineBanner from './components/OfflineBanner'
 import { getCopy } from './i18n'
 
 const MODULES = [
@@ -132,14 +133,16 @@ export default function App() {
 
   return (
     <div className="app-frame">
+      <OfflineBanner />
+
       <aside className="app-sidebar">
         <div className="sidebar-brand">
-          <div className="sidebar-logo-mark">✚</div>
-          <div>
-            <h1 className="sidebar-logo-text">ThunaiMed</h1>
-            <p className="sidebar-logo-subtext">{copy.appTag}</p>
-          </div>
-        </div>
+  <img src="/icon-192.png" alt="ThunaiMed logo" className="sidebar-logo-image" />
+  <div>
+    <h1 className="sidebar-logo-text">ThunaiMed</h1>
+    <p className="sidebar-logo-subtext">{copy.appTag}</p>
+  </div>
+</div>
 
         <nav className="sidebar-nav">
           {MODULES.map((module) => (
@@ -176,45 +179,10 @@ export default function App() {
         </header>
 
         <main className="app-content-grid">
-          <section className="workspace-column">
-            {renderMainPanel()}
-          </section>
+          <section className="workspace-column">{renderMainPanel()}</section>
 
           <aside className="insight-column">
             <ClinicalOverview />
-            <div className="panel-card stack-md">
-              <div>
-                <p className="section-eyebrow">{copy.panelRoadmapEyebrow}</p>
-                <h3 className="section-title">{copy.panelRoadmapTitle}</h3>
-              </div>
-              <ul className="side-list">
-                <li>{copy.panelRoadmapItem1}</li>
-                <li>{copy.panelRoadmapItem2}</li>
-                <li>{copy.panelRoadmapItem3}</li>
-                <li>{copy.panelRoadmapItem4}</li>
-              </ul>
-            </div>
-
-            <div className="panel-card stack-md">
-              <div>
-                <p className="section-eyebrow">{copy.panelSafetyEyebrow}</p>
-                <h3 className="section-title">{copy.panelSafetyTitle}</h3>
-              </div>
-              <ul className="side-list muted">
-                <li>{copy.panelSafetyItem1}</li>
-                <li>{copy.panelSafetyItem2}</li>
-                <li>{copy.panelSafetyItem3}</li>
-                <li>{copy.panelSafetyItem4}</li>
-              </ul>
-            </div>
-
-            <div className="panel-card stack-md soft-accent">
-              <div>
-                <p className="section-eyebrow">{copy.panelFocusEyebrow}</p>
-                <h3 className="section-title">{copy.panelFocusTitle}</h3>
-              </div>
-              <p className="note-text">{copy.panelFocusNote}</p>
-            </div>
           </aside>
         </main>
       </div>

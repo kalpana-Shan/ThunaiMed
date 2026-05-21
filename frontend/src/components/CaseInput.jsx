@@ -33,7 +33,6 @@ const SPEECH_LOCALES = {
 
 export default function CaseInput({ onResult, loading, setLoading, language, copy }) {
   const [symptoms, setSymptoms] = useState('')
-  const [ageMonths, setAgeMonths] = useState('')
   const [ageYears, setAgeYears] = useState('')
   const [weightKg, setWeightKg] = useState('')
   const [temperature, setTemperature] = useState('')
@@ -59,12 +58,9 @@ export default function CaseInput({ onResult, loading, setLoading, language, cop
     setLoading(true)
 
     try {
-      const computedAgeMonths = ageMonths || (ageYears ? parseInt(ageYears, 10) * 12 : null)
-
       const composedSymptoms = [
         symptoms,
         ageYears ? `Age years: ${ageYears}` : '',
-        computedAgeMonths ? `Age months: ${computedAgeMonths}` : '',
         weightKg ? `Weight: ${weightKg} kg` : '',
         temperature ? `Temperature: ${temperature} C` : '',
         pulse ? `Pulse: ${pulse} bpm` : '',
@@ -73,30 +69,28 @@ export default function CaseInput({ onResult, loading, setLoading, language, cop
         glucose ? `Blood glucose: ${glucose}` : '',
         notes ? `Additional notes: ${notes}` : '',
         uploadedFile ? `Attached file: ${uploadedFile.name}` : ''
-      ].filter(Boolean).join(' | ')
+      ]
+        .filter(Boolean)
+        .join(' | ')
 
       const result = await triageRequest(
         composedSymptoms,
-        computedAgeMonths,
+        ageYears ? parseInt(ageYears, 10) : null,
         weightKg,
         language
       )
 
-      const caseRecord = addCaseToHistory(
-        result,
-        {
-          symptoms: composedSymptoms,
-          language,
-          notes
-        }
-      )
+      const caseRecord = addCaseToHistory(result, {
+        symptoms: composedSymptoms,
+        language,
+        notes
+      })
 
       onResult({
         ...result,
         uploaded_file: uploadedFile ? uploadedFile.name : null,
         collected_vitals: {
           ageYears,
-          ageMonths: computedAgeMonths,
           weightKg,
           temperature,
           pulse,
@@ -216,16 +210,6 @@ export default function CaseInput({ onResult, loading, setLoading, language, cop
             />
           </div>
           <div className="field-block">
-            <label className="field-label">{copy.ageMonths}</label>
-            <input
-              value={ageMonths}
-              onChange={(e) => setAgeMonths(e.target.value)}
-              className="app-input"
-              type="number"
-              placeholder="24"
-            />
-          </div>
-          <div className="field-block">
             <label className="field-label">{copy.weightKg}</label>
             <input
               value={weightKg}
@@ -246,9 +230,6 @@ export default function CaseInput({ onResult, loading, setLoading, language, cop
               placeholder="38.5"
             />
           </div>
-        </div>
-
-        <div className="grid-form grid-4">
           <div className="field-block">
             <label className="field-label">{copy.pulse}</label>
             <input
@@ -259,6 +240,9 @@ export default function CaseInput({ onResult, loading, setLoading, language, cop
               placeholder="108"
             />
           </div>
+        </div>
+
+        <div className="grid-form grid-4">
           <div className="field-block">
             <label className="field-label">{copy.spo2}</label>
             <input
@@ -289,6 +273,7 @@ export default function CaseInput({ onResult, loading, setLoading, language, cop
               placeholder="110 mg/dL"
             />
           </div>
+          <div className="field-block" />
         </div>
 
         <div className="grid-form grid-2">

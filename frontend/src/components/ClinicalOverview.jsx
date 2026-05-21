@@ -70,23 +70,21 @@ export default function ClinicalOverview() {
           <div className="history-content stack-md">
             <div className="note-card">
               <h4>Latest summary</h4>
-              <p>{state.latestCase.summary || 'No summary available.'}</p>
+              <p className="compact-preview">{state.latestCase.summary || 'No summary available.'}</p>
             </div>
 
             <div className="note-card">
               <h4>Latest symptoms</h4>
-              <p>{state.latestCase.symptoms || 'No symptom text available.'}</p>
+              <p className="compact-preview">{state.latestCase.symptoms || 'No symptom text available.'}</p>
             </div>
           </div>
         </div>
       ) : (
-        <div className="empty-state">
+        <div className="empty-state compact-empty">
           <span>📋</span>
           <div>
             <strong>No latest case yet.</strong>
-            <p className="empty-subtext">
-              Run a triage to populate this overview with current clinical workflow data.
-            </p>
+            <p className="empty-subtext">Run a triage to populate this overview.</p>
           </div>
         </div>
       )}

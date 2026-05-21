@@ -83,3 +83,9 @@ class ImageAnalysisResponse(BaseModel):
     clinical_observations: List[str]
     suggested_follow_up: str
     disclaimer: str
+
+
+class TranslateRequest(BaseModel):
+    text: str
+    source_language: str
+    target_language: str
